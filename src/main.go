@@ -1,56 +1,93 @@
 package main
 
 import (
+	"os"
 	"log"
+	"fmt"
+	"time"
+	"context"
+	"strings"
+	"os/signal"
 	"math/rand"
 	"net/http"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/skip2/go-qrcode"
-	// "github.com/smartpass/v1/queue"
 )
 
 func main() {
-	r := mux.NewRouter()
-	r.Use(mux.CORSMethodMiddleware(r))
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         "0.0.0.0:80",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
-
-	r.HandleFunc("/user", UserHandler)
-	r.HandleFunc("/market", MarketHandler)
-	r.HandleFunc("/avalanche", QRCodeHandler)
-	r.HandleFunc("/ticket", TicketHandler)
-	r.HandleFunc("/rpc", RPCHandler)
-
-	log.Fatal(srv.ListenAndServe())
+  var wait time.Duration
+  fmt.Print(uuid.New().String())
+  r := mux.NewRouter()
+  // r.Use(mux.CORSMethodMiddleware(r))
+  srv := &http.Server{
+  	Handler:      r,
+  	Addr:         "0.0.0.0:8000",
+  	WriteTimeout: 15 * time.Second,
+  	ReadTimeout:  15 * time.Second,
+  }
+  
+  r.HandleFunc("/user", UserHandler)
+  r.HandleFunc("/market", MarketHandler)
+  r.HandleFunc("/handler", QRCodeHandler)
+  r.HandleFunc("/nft/mint/{params}", NFTMintHandler)
+  r.HandleFunc("/nft/query/{params}", NFTQueryHandler)
+  r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
+  r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
+  r.HandleFunc("/rpc", RPCHandler)
+  
+  go func() {
+      if err := srv.ListenAndServe(); err != nil {
+          log.Println(err)
+      }
+  }()
+      c := make(chan os.Signal, 1)
+  signal.Notify(c, os.Interrupt)
+  
+  // Block until we receive our signal.
+  <-c
+  
+  // Create a deadline to wait for.
+  ctx, cancel := context.WithTimeout(context.Background(), wait)
+  defer cancel()
+  // Doesn't block if no connections, but will otherwise wait
+  // until the timeout deadline.
+  srv.Shutdown(ctx)
+  // Optionally, you could run srv.Shutdown in a goroutine and block on
+  // <-ctx.Done() if your application should wait for other services
+  // to finalize based on context cancellation.
+  log.Println("shutting down")
 }
 
 /*
   User Functionality
 */
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-}
-
-// Should maintain an asynchronous connection to send notifications to users
-func TicketHandler(w http.ResponseWriter, r *http.Request) {
-	// Handle this better
-	// backend, err := ethclient.Dial("http://127.0.0.1:9650/ext/ipcs")
+  // vars := mux.Vars(r)
 }
 
 /*
   Ticket Functionality
 */
+func NFTIDHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)	
+  uuid := vars["UUID"]
+}
+func NFTMintHandler(w http.ResponseWriter, r *http.Request) {
+  // vars := mux.Vars(r)	
+}
+func NFTQueryHandler(w http.ResponseWriter, r *http.Request) {
+  // vars := mux.Vars(r)	
+}
+func NFTSellHandler(w http.ResponseWriter, r *http.Request) {
+  // vars := mux.Vars(r)	
+}
+
 func QRCodeUri(method string) string {
 	UUID := uuid.New().String()
-	uri := "https://smartpass.link/avalanche/avalanche:" + UUID
+	// uri := "https://smartpass.link/nft/id/" + UUID
+	uri := "https://127.0.0.1:8000/nft/id/" + UUID
 	return uri
 }
 
@@ -94,7 +131,6 @@ func GenQR() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// TODO: Remove
 	log.Print(png)
 	// TODO: Generate NFT with generated file

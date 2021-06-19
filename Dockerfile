@@ -1,13 +1,13 @@
-FROM golang:latest
+FROM golang:latest as builder
 
 RUN mkdir /app
-
 COPY ./src /app/
-
 WORKDIR /app
-
 EXPOSE 8000/tcp
-
 RUN go build -o server .
 
-CMD ["/app/server"]
+FROM debian:bullseye-slim
+
+WORKDIR /tmp
+COPY --from=builder /app/server .
+CMD ["/tmp/server"]
