@@ -1,4 +1,4 @@
-module storage
+module github.com/smartpassnft/smartpass-core/storage
 
 go 1.16
 
