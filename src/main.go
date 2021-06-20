@@ -4,6 +4,7 @@ import (
 	"os"
 	"log"
 	"fmt"
+  "skv"
 	"time"
 	"context"
 	"strings"
@@ -11,10 +12,17 @@ import (
 	"math/rand"
 	"net/http"
 
+  // Remote Libary
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/skip2/go-qrcode"
+  "github.com/smartpassnft/goavx/avm"
+  "github.com/smartpassnft/smartpass-core/storage"
 )
+
+
+// Helper Variables
+type Store skv.KVStore;
 
 func main() {
   var wait time.Duration
@@ -32,7 +40,7 @@ func main() {
   r.HandleFunc("/market", MarketHandler)
   r.HandleFunc("/handler", QRCodeHandler)
   r.HandleFunc("/nft/mint/{params}", NFTMintHandler)
-  r.HandleFunc("/nft/query/{params}", NFTQueryHandler)
+  r.HandleFunc("/nft/query/{UUID}", NFTQueryHandler)
   r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
   r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
   r.HandleFunc("/rpc", RPCHandler)
@@ -73,14 +81,33 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 func NFTIDHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)	
   uuid := vars["UUID"]
+  // Get wallet address tied to NFT
+  if (storage.exists(uuid, *Store)) {
+    wallet := storage.getWallet(uuid, *Store)
+    // Send Notification
+  }
 }
+
 func NFTMintHandler(w http.ResponseWriter, r *http.Request) {
-  // vars := mux.Vars(r)	
+  // TODO: Iron out parameters for mint function
+  vars := mux.Vars(r)	
+  uri := avm.utils.URI{Address: "", Port: ""}
+  // payload := goavx.avm.assets.CreateNFTPayload()
+  payload := nil
+  avm.assets.CreateNFTAsset(payload, uri)
 }
+
 func NFTQueryHandler(w http.ResponseWriter, r *http.Request) {
-  // vars := mux.Vars(r)	
+  vars := mux.Vars(r)	
+  uuid := vars["UUID"]
+  if (storage.exists(uuid, *Store)) {
+    // Add some functionality here
+    log.Print(exists)
+  }
 }
+
 func NFTSellHandler(w http.ResponseWriter, r *http.Request) {
+  // TODO: Also change ownership in storage
   // vars := mux.Vars(r)	
 }
 
