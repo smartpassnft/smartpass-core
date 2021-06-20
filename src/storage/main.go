@@ -1,15 +1,19 @@
 package storage
 
 import (
-  "skv"
-  "fmt"
   "log"
 
   "github.com/rapidloop/skv"
 )
 
+// Helpers
+type Wallet struct{
+  Address string
+  nft   []string
+}
+
 // Returns Bool
-func Exists(uuid string, store &skv.KVStore) bool {
+func Exists(uuid string, store *skv.KVStore) bool {
   err := store.Get(uuid, store)
   if ( err != nil ) {
     return true
@@ -18,15 +22,17 @@ func Exists(uuid string, store &skv.KVStore) bool {
 }
 
 // Get Wallet from Map 
-func GetWallet(uuid string, store &skv.KVStore) string {
-  wallet := store.Get(uuid, store)
-  return wallet
+func GetWallet(uuid string, store *skv.KVStore) string {
+  var wallet Wallet
+  // TODO: Test where value is being stored from passed interface
+  store.Get(uuid, &wallet)
+  return wallet.Address
 }
 
 // Store NFT and wallet relation
-func StoreNFT(uuid address string, store &skv.KVStore) {
+func StoreNFT(uuid string, address string, store *skv.KVStore) {
   err := store.Put(uuid, address)
-  if (err) {
+  if (err != nil) {
     log.Fatal(err)
   }
 }

@@ -15,6 +15,7 @@ import (
   // Remote Libary
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+  "github.com/rapidloop/skv"
 	"github.com/skip2/go-qrcode"
   "github.com/smartpassnft/goavx/avm"
   "github.com/smartpassnft/smartpass-core/storage"
@@ -22,7 +23,7 @@ import (
 
 
 // Helper Variables
-type Store skv.KVStore;
+type Store skv.KVStore := skv.Open("log/Store.db");
 
 func main() {
   var wait time.Duration
