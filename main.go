@@ -3,8 +3,6 @@ package main
 import (
 	"os"
 	"log"
-	"fmt"
-  "skv"
 	"time"
 	"context"
 	"strings"
@@ -17,17 +15,23 @@ import (
 	"github.com/gorilla/mux"
   "github.com/rapidloop/skv"
 	"github.com/skip2/go-qrcode"
-  "github.com/smartpassnft/goavx/avm"
-  "github.com/smartpassnft/smartpass-core/storage"
+  // avm "github.com/smartpassnft/goavx/avm"
+  utils "github.com/smartpassnft/goavx/avm/utils"
+  assets "github.com/smartpassnft/goavx/avm/assets"
+  storage "github.com/smartpassnft/smartpass-core/storage"
 )
 
 
 // Helper Variables
-type Store skv.KVStore := skv.Open("log/Store.db");
+var store, err = skv.Open("log/Store.db");
 
 func main() {
+  if (err != nil) {
+    log.Fatal(err)
+  }
+
   var wait time.Duration
-  fmt.Print(uuid.New().String())
+
   r := mux.NewRouter()
   // r.Use(mux.CORSMethodMiddleware(r))
   srv := &http.Server{
@@ -82,28 +86,31 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 func NFTIDHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)	
   uuid := vars["UUID"]
+  wallet := ""
   // Get wallet address tied to NFT
-  if (storage.exists(uuid, *Store)) {
-    wallet := storage.getWallet(uuid, *Store)
+  if (storage.Exists(uuid, store)) {
+    wallet = storage.GetWallet(uuid, store)
     // Send Notification
   }
+  // TODO: Remove when can retrieve wallet
+  log.Print(wallet)
 }
 
 func NFTMintHandler(w http.ResponseWriter, r *http.Request) {
   // TODO: Iron out parameters for mint function
-  vars := mux.Vars(r)	
-  uri := avm.utils.URI{Address: "", Port: ""}
+  // vars := mux.Vars(r)	
+  uri := utils.URI{Address: "", Port: ""}
   // payload := goavx.avm.assets.CreateNFTPayload()
-  payload := nil
-  avm.assets.CreateNFTAsset(payload, uri)
+  var payload utils.Payload
+  assets.CreateNFTAsset(payload, uri)
 }
 
 func NFTQueryHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)	
   uuid := vars["UUID"]
-  if (storage.exists(uuid, *Store)) {
+  if (storage.Exists(uuid, store)) {
     // Add some functionality here
-    log.Print(exists)
+    log.Print("exists")
   }
 }
 
