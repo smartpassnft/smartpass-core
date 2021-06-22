@@ -11,5 +11,6 @@ require (
 	github.com/smartpassnft/goavx/avm/assets v0.0.0-20210612173716-7f8a39b4c768
 	github.com/smartpassnft/goavx/avm/utils v0.0.0-20210612173716-7f8a39b4c768
 	github.com/smartpassnft/smartpass-core/storage v0.0.0-20210620165346-0ad297c1f1ad
+	github.com/spf13/viper v1.8.0 // indirect
 	google.golang.org/grpc v1.38.0
 )

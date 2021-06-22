@@ -17,7 +17,8 @@ type Connections interface {
 
 // TODO: Add functionality for other chains here
 func RequestBuilder() utils.URI {
-	var uri = utils.URI{Address: "https://api.smartpass.link/ext/bc/X/rpc", Port: "10000"}
+  address := helper.GetRPCAddress()
+	var uri = utils.URI{Address: address, Port: "10000"}
 	return uri
 }
 
