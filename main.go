@@ -1,122 +1,111 @@
 package main
 
 import (
-	"os"
-	"log"
-	"time"
 	"context"
-	"strings"
-	"os/signal"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"os/signal"
+	"strings"
+	"time"
 
-  // Remote Libary
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-  "github.com/rapidloop/skv"
+	"github.com/rapidloop/skv"
 	"github.com/skip2/go-qrcode"
-  // avm "github.com/smartpassnft/goavx/avm"
-  utils "github.com/smartpassnft/goavx/avm/utils"
-  assets "github.com/smartpassnft/goavx/avm/assets"
-  storage "github.com/smartpassnft/smartpass-core/storage"
+	assets "github.com/smartpassnft/goavx/avm/assets"
+	utils "github.com/smartpassnft/goavx/avm/utils"
+	storage "github.com/smartpassnft/smartpass-core/storage"
 )
 
-
 // Helper Variables
-var store, err = skv.Open("log/Store.db");
+var store, err = skv.Open("log/Store.db")
 
 func main() {
-  if (err != nil) {
-    log.Fatal(err)
-  }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  var wait time.Duration
+	var wait time.Duration
 
-  r := mux.NewRouter()
-  // r.Use(mux.CORSMethodMiddleware(r))
-  srv := &http.Server{
-  	Handler:      r,
-  	Addr:         "0.0.0.0:8000",
-  	WriteTimeout: 15 * time.Second,
-  	ReadTimeout:  15 * time.Second,
-  }
-  
-  r.HandleFunc("/user", UserHandler)
-  r.HandleFunc("/market", MarketHandler)
-  r.HandleFunc("/handler", QRCodeHandler)
-  r.HandleFunc("/nft/mint/{params}", NFTMintHandler)
-  r.HandleFunc("/nft/query/{UUID}", NFTQueryHandler)
-  r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
-  r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
-  r.HandleFunc("/rpc", RPCHandler)
-  
-  go func() {
-      if err := srv.ListenAndServe(); err != nil {
-          log.Println(err)
-      }
-  }()
-      c := make(chan os.Signal, 1)
-  signal.Notify(c, os.Interrupt)
-  
-  // Block until we receive our signal.
-  <-c
-  
-  // Create a deadline to wait for.
-  ctx, cancel := context.WithTimeout(context.Background(), wait)
-  defer cancel()
-  // Doesn't block if no connections, but will otherwise wait
-  // until the timeout deadline.
-  srv.Shutdown(ctx)
-  // Optionally, you could run srv.Shutdown in a goroutine and block on
-  // <-ctx.Done() if your application should wait for other services
-  // to finalize based on context cancellation.
-  log.Println("shutting down")
+	r := mux.NewRouter()
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         "0.0.0.0:8000",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	r.HandleFunc("/user", UserHandler)
+	r.HandleFunc("/market", MarketHandler)
+	r.HandleFunc("/nft/mint/{params}", NFTMintHandler)
+	r.HandleFunc("/nft/query/{UUID}", NFTQueryHandler)
+	r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
+	r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
+	r.HandleFunc("/rpc", RPCHandler)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	defer cancel()
+	srv.Shutdown(ctx)
+
+	log.Println("shutting down")
 }
 
 /*
   User Functionality
 */
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-  // vars := mux.Vars(r)
+	// vars := mux.Vars(r)
 }
 
 /*
   Ticket Functionality
 */
 func NFTIDHandler(w http.ResponseWriter, r *http.Request) {
-  vars := mux.Vars(r)	
-  uuid := vars["UUID"]
-  wallet := ""
-  // Get wallet address tied to NFT
-  if (storage.Exists(uuid, store)) {
-    wallet = storage.GetWallet(uuid, store)
-    // Send Notification
-  }
-  // TODO: Remove when can retrieve wallet
-  log.Print(wallet)
+	vars := mux.Vars(r)
+	uuid := vars["UUID"]
+	wallet := ""
+	// Get wallet address tied to NFT
+	if storage.Exists(uuid, store) {
+		wallet = storage.GetWallet(uuid, store)
+		// Send Notification
+	}
+	// TODO: Remove when can retrieve wallet
+	log.Print(wallet)
 }
 
 func NFTMintHandler(w http.ResponseWriter, r *http.Request) {
-  // TODO: Iron out parameters for mint function
-  // vars := mux.Vars(r)	
-  uri := utils.URI{Address: "", Port: ""}
-  // payload := goavx.avm.assets.CreateNFTPayload()
-  var payload utils.Payload
-  assets.CreateNFTAsset(payload, uri)
+	// TODO: Iron out parameters for mint function
+	// vars := mux.Vars(r)
+	uri := utils.URI{Address: "", Port: ""}
+	// payload := goavx.avm.assets.CreateNFTPayload()
+	var payload utils.Payload
+	assets.CreateNFTAsset(payload, uri)
 }
 
 func NFTQueryHandler(w http.ResponseWriter, r *http.Request) {
-  vars := mux.Vars(r)	
-  uuid := vars["UUID"]
-  if (storage.Exists(uuid, store)) {
-    // Add some functionality here
-    log.Print("exists")
-  }
+	vars := mux.Vars(r)
+	uuid := vars["UUID"]
+	if storage.Exists(uuid, store) {
+		// Add some functionality here
+		log.Print("exists")
+	}
 }
 
 func NFTSellHandler(w http.ResponseWriter, r *http.Request) {
-  // TODO: Also change ownership in storage
-  // vars := mux.Vars(r)	
+	// TODO: Also change ownership in storage
+	// vars := mux.Vars(r)
 }
 
 func QRCodeUri(method string) string {
@@ -124,11 +113,6 @@ func QRCodeUri(method string) string {
 	// uri := "https://smartpass.link/nft/id/" + UUID
 	uri := "https://127.0.0.1:8000/nft/id/" + UUID
 	return uri
-}
-
-// Handles browser view of QR code
-func QRCodeHandler(w http.ResponseWriter, r *http.Request) {
-
 }
 
 /*
