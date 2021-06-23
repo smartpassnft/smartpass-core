@@ -1,14 +1,15 @@
 package main
 
 import (
-	"context"
 	"log"
-	"math/rand"
-	"net/http"
 	"os"
-	"os/signal"
-	"strings"
 	"time"
+	"strings"
+	"context"
+	"net/http"
+	"math/rand"
+	"os/signal"
+  "encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -17,12 +18,22 @@ import (
 	assets "github.com/smartpassnft/goavx/avm/assets"
 	utils "github.com/smartpassnft/goavx/avm/utils"
 	storage "github.com/smartpassnft/smartpass-core/storage"
+	helper "github.com/smartpassnft/smartpass-core/helper"
 )
 
 // Helper Variables
-var store, err = skv.Open("log/Store.db")
+var store *skv.KVStore
+var user *skv.KVStore
+var err error
+var site string
 
 func main() {
+  userStorage := helper.GetUserStorage()
+  nft := helper.GetNFTStorage()
+  store, err = skv.Open(nft)
+  user, err = skv.Open(userStorage)
+  site = helper.GetWebServer()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,6 +54,7 @@ func main() {
 	r.HandleFunc("/nft/query/{UUID}", NFTQueryHandler)
 	r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
 	r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
+  r.HandleFunc("/user/status/{PUBKEY}", UserStatusHandler)
 	r.HandleFunc("/rpc", RPCHandler)
 
 	go func() {
@@ -65,8 +77,38 @@ func main() {
 /*
   User Functionality
 */
-func UserHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
+func UserStatusHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+  pubkey := vars["PUBKEY"]
+
+  var u helper.NQuery
+
+  if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+    log.Fatal(err)
+    http.Error(w, "Error decoding reponse object", http.StatusBadRequest)
+    return
+  }
+
+  /* Data needed for request
+    uuid : uuid
+    pubkey : pubkey
+  */
+  status := storage.QueryStatus(u.UUID, u.Pubkey, user)
+  var n = helper.Notification{Pubkey: u.Pubkey, UUID: u.UUID, Status: status}
+
+  response, err := json.Marshal(&n)
+  if err != nil {
+    log.Fatal(err)
+    http.Error(w, "Error encoding response object", https.StatusInternalServerError)
+    return
+  }
+  w.Header().Add("Content-Type", "application/json")
+  w.WriteHeader(http.StatusCreated)
+  w.Write(response)
+}
+
+func UserHandler(w http.ResponseWriter, r * http.Request) {
+
 }
 
 /*
@@ -110,8 +152,8 @@ func NFTSellHandler(w http.ResponseWriter, r *http.Request) {
 
 func QRCodeUri(method string) string {
 	UUID := uuid.New().String()
-	// uri := "https://smartpass.link/nft/id/" + UUID
-	uri := "https://127.0.0.1:8000/nft/id/" + UUID
+	uri := "https://" + site + "/nft/id/" + UUID
+	// uri := "https://127.0.0.1:8000/nft/id/" + UUID
 	return uri
 }
 
@@ -138,20 +180,31 @@ func GenQR() string {
 	method := ""
 	var png []byte
 
-	contract := QRCodeUri(method)
-	png, err := qrcode.Encode(contract, qrcode.Medium, 256)
+	handler := QRCodeUri(method)
+	png, err := qrcode.Encode(handler, qrcode.Medium, 256)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+  _, err = os.Stat("/tmp/qr")
+  if os.IsNotExist(err) {
+    err = os.Mkdir("/tmp/qr", 0755)
+    if err != nil {
+      log.Fatal(err)
+    }
+  }
+
 	// TODO: Implement dynamic storage with a bucket or custom ipfs server
-	file := "/tmp/qr" + randomString() + ".png"
-	err = qrcode.WriteFile("https://smartpass.link", qrcode.Medium, 256, file)
+	file := "/tmp/qr/" + randomString() + ".png"
+	err = qrcode.WriteFile(handler, qrcode.Medium, 256, file)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// TODO: Remove
-	log.Print(png)
+
+  // TODO: Use PNG data to backup PNG file to IPFS
+  // https://github.com/ipfs/go-ipfs/blob/master/docs/examples/go-ipfs-as-a-library/main.go#L240-L243
+  log.Print(png)
+
 	// TODO: Generate NFT with generated file
 	return file
 }

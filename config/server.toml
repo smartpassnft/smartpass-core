@@ -1,2 +1,7 @@
-[settings]
-rpc = "https://smartpass.link/"
+[web]
+rpc = "https://beta.smartpass.link/bc/ext/"
+web = "https://beta.smartpass.link/"
+
+[storage]
+user = "log/User.db"
+nft = "log/Store.db"
