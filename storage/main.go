@@ -49,7 +49,7 @@ func UpdateNotification(pubkey string, uuid string, u *skv.KVStore, value int) {
 }
 
 // Query notification status
-func QueryStatus(pubkey string, uuid string, u *skv.KVStore) int {
+func QueryNotification(pubkey string, uuid string, u *skv.KVStore) int {
   var user User
   // user storage
   u.Get(pubkey, &user)

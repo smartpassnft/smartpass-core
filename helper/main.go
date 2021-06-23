@@ -19,6 +19,7 @@ type NQuery struct {
 func GetString(config string, path string, variable string) string {
   viper.SetConfigName(config)
   viper.AddConfigPath(path)
+  // viper.SetConfigType("toml")
   err := viper.ReadInConfig()
   if err != nil {
     panic(fmt.Errorf("Fatal error config file: %s\n", err))
@@ -27,22 +28,22 @@ func GetString(config string, path string, variable string) string {
 }
 
 func GetWebServer() string {
-  web := GetString("server", "../config", "web.web")
+  web := GetString("server", "./config", "web.web")
   return web
 }
 
 func GetRPCServer() string {
-  rpc := GetString("server", "../config", "web.rpc")
+  rpc := GetString("server", "./config", "web.rpc")
   return rpc
 }
 
 func GetUserStorage() string {
-  user := GetString("server", "../config", "storage.user")
-  return "../" + user
+  user := GetString("server", "./config", "storage.user")
+  return user
 }
 
 func GetNFTStorage() string {
-  nft := GetString("server", "../config", "storage.nft")
+  nft := GetString("server", "./config", "storage.nft")
   // TODO: Clean up
-  return "../" + nft
+  return nft
 }

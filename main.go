@@ -49,12 +49,15 @@ func main() {
 	}
 
 	r.HandleFunc("/user", UserHandler)
+  r.HandleFunc("/user/status", UserStatusHandler)
+
 	r.HandleFunc("/market", MarketHandler)
+
 	r.HandleFunc("/nft/mint/{params}", NFTMintHandler)
 	r.HandleFunc("/nft/query/{UUID}", NFTQueryHandler)
 	r.HandleFunc("/nft/sell/{params}", NFTSellHandler)
 	r.HandleFunc("/nft/id/{UUID}", NFTIDHandler)
-  r.HandleFunc("/user/status/{PUBKEY}", UserStatusHandler)
+
 	r.HandleFunc("/rpc", RPCHandler)
 
 	go func() {
@@ -78,9 +81,8 @@ func main() {
   User Functionality
 */
 func UserStatusHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-  pubkey := vars["PUBKEY"]
-
+	// vars := mux.Vars(r)
+  // pubkey := vars["PUBKEY"]
   var u helper.NQuery
 
   if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
@@ -93,13 +95,13 @@ func UserStatusHandler(w http.ResponseWriter, r *http.Request) {
     uuid : uuid
     pubkey : pubkey
   */
-  status := storage.QueryStatus(u.UUID, u.Pubkey, user)
+  status := storage.QueryNotification(u.UUID, u.Pubkey, user)
   var n = helper.Notification{Pubkey: u.Pubkey, UUID: u.UUID, Status: status}
 
   response, err := json.Marshal(&n)
   if err != nil {
     log.Fatal(err)
-    http.Error(w, "Error encoding response object", https.StatusInternalServerError)
+    http.Error(w, "Error encoding response object", http.StatusInternalServerError)
     return
   }
   w.Header().Add("Content-Type", "application/json")
