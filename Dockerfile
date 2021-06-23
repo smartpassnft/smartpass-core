@@ -9,5 +9,5 @@ RUN go build -o server .
 FROM debian:bullseye-slim
 
 WORKDIR /tmp
-COPY --from=builder /app/server .
+COPY --from=builder /app/server /app/config /app/log .
 CMD ["/tmp/server"]
