@@ -6,8 +6,4 @@ WORKDIR /app
 EXPOSE 8000/tcp
 RUN go build -o server .
 
-FROM debian:bullseye-slim
-
-WORKDIR /tmp
-COPY --from=builder /app/server .
-CMD ["/tmp/server"]
+CMD ["/app/server"]
