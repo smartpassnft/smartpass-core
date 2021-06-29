@@ -5,6 +5,7 @@ import (
 
 	assets "github.com/smartpassnft/goavx/avm/assets"
 	utils "github.com/smartpassnft/goavx/avm/utils"
+	"github.com/smartpassnft/smartpass-core/helper"
 	/*
 	  "github.com/smartpassnft/goavx/avm"
 	  "google.golang.org/grpc"
@@ -17,7 +18,7 @@ type Connections interface {
 
 // TODO: Add functionality for other chains here
 func RequestBuilder() utils.URI {
-  address := helper.GetRPCAddress()
+	address := helper.GetRPCServer()
 	var uri = utils.URI{Address: address, Port: "10000"}
 	return uri
 }

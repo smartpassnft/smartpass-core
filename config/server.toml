@@ -2,6 +2,9 @@
 rpc = "https://beta.smartpass.link/bc/ext/"
 web = "https://beta.smartpass.link/"
 
-[storage]
-user = "log/User.db"
-nft = "log/Store.db"
+[db]
+host = "127.0.0.1"
+user = "test"
+password = "test"
+dbname = "test"
+port  = 5432

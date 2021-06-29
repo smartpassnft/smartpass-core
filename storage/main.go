@@ -1,85 +1,78 @@
 package storage
 
+// Docs https://gorm.io/docs/index.html
 import (
-  "log"
+	"log"
 
-  "github.com/rapidloop/skv"
+	helper "github.com/smartpassnft/smartpass-core/helper"
 )
 
-// Helpers
-type Wallet struct{
-  Pubkey string
-  nft   []string
-}
-
-type User struct{
-  Pubkey string
-  Value map[string]int
-}
-
 /*
-  User Storage
+  Structure (helper.User)
+  	Pubkey           string
+	  TokenHash        string
+	  CreatedAt        time.Time
+  	UpdatedAt        time.Time
+
+  Structure (helper.Ticket)
+  	UUID   string
+	  Pubkey string
+	  Status int
 
   Values for notification
-  0 - none
-  1 - active query
-  10 - yes
-  20 - deny
+    0 - none
+    1 - active query
+    10 - yes
+    20 - deny
 */
-func SetNotification(pubkey string, uuid string, u *skv.KVStore, value int){
-  // TODO: Change for map so that values can be updated
-  val := map[string]int{
-    uuid : value,
-  }
-  err := u.Put(pubkey, val)
-  if err != nil {
-    log.Fatal(err)
-  }
+
+// Set notification value
+func CreateTicket(pubkey string, uuid string, value int) {
+	db := helper.OpenDB()
+	ticket := helper.Ticket{UUID: uuid, Pubkey: pubkey, Status: value}
+	result := db.Create(&ticket)
+	if result.Error {
+		log.Fatal("error saving NFT")
+	}
 }
 
-// Update user value of use
-func UpdateNotification(pubkey string, uuid string, u *skv.KVStore, value int) {
-  var user User 
-  u.Get(pubkey, &user)
-  user.Value[uuid] = value
-  err := u.Put(pubkey, user)
-  if err != nil {
-    log.Fatal(err)
-  }
+// Update notification value
+func UpdateNotification(pubkey string, uuid string, value int) {
+	db := helper.OpenDB()
+	query := "UUID = " + uuid
+	db.Model(&helper.Ticket{}).Where(query, true).Update("Value", value)
 }
 
 // Query notification status
-func QueryNotification(pubkey string, uuid string, u *skv.KVStore) int {
-  var user User
-  // user storage
-  u.Get(pubkey, &user)
-  return user.Value[uuid]
+func QueryNotification(pubkey string, uuid string) int {
+	db := helper.OpenDB()
+	ticket := db.First(&helper.Ticket{}, uuid)
+	if ticket.Error {
+		log.Fatal("not found")
+	}
+	val, _ := ticket.Get("Status")
+	return val
+}
+
+// Query User
+func QueryUser(pubkey string) bool {
+	db := helper.OpenDB()
+	user := db.First(&helper.User{}, pubkey)
+	if user.Error {
+		log.Fatal("not found")
+		return false
+	}
+	return true
 }
 
 /*
   NFT Wallet Functionality
 */
-func Exists(uuid string, store *skv.KVStore) bool {
-  err := store.Get(uuid, store)
-  if ( err != nil ) {
-    return true
-  }
-  return false
-}
-
-// Get Wallet from Map 
-func GetWallet(uuid string, store *skv.KVStore) string {
-  var wallet Wallet
-  // TODO: Test where value is being stored from passed interface
-  store.Get(uuid, &wallet)
-  return wallet.Pubkey
-}
-
-// Store NFT and wallet relation
-func StoreNFT(uuid string, pubkey string, store *skv.KVStore, u *skv.KVStore) {
-  err := store.Put(uuid, pubkey)
-  if (err != nil) {
-    log.Fatal(err)
-  }
-  SetNotification(pubkey, uuid, u, 0)
+func Exists(uuid string) bool {
+	db := helper.OpenDB()
+	ticket := db.First(&helper.Ticket{}, uuid)
+	if ticket.Error {
+		return false
+	}
+	return true
 }
