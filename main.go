@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	handler "github.com/smartpassnft/smartpass-core/handler"
+	handler "github.com/smartpassnft/smartpass-core/handlers"
 )
 
 func main() {
