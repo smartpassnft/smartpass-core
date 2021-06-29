@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"net/http"
@@ -15,15 +16,15 @@ import (
 	assets "github.com/smartpassnft/goavx/avm/assets"
 	utils "github.com/smartpassnft/goavx/avm/utils"
 	"github.com/smartpassnft/smartpass-core/helper"
+	helper "github.com/smartpassnft/smartpass-core/helper"
 	"github.com/smartpassnft/smartpass-core/storage"
+	"golang.org/x/crypto/bcrypt"
 )
 
 /*
   User Functionality
 */
 func UserStatusHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// pubkey := vars["PUBKEY"]
 	var u helper.NQuery
 
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
@@ -55,6 +56,20 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserLoginHandler(w http.ResponseWriter, r *http.Request) {
+	var user helper.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		var err error
+		err = SetError(err, "error in ready body")
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	if helper.QueryUser(user.Pubkey) {
+		// TODO: Change token generating function
+		user.Tickets = 
+	}
 
 }
 

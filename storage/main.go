@@ -12,14 +12,14 @@ import (
 /*
   Structure (helper.User)
   	Pubkey           string
-	  TokenHash        string
-	  CreatedAt        time.Time
+	TokenHash        string
+	CreatedAt        time.Time
   	UpdatedAt        time.Time
 
   Structure (helper.Ticket)
   	UUID   string
-	  Pubkey string
-	  Status int
+	Pubkey string
+	Status int
 
   Values for notification
     0 - none
@@ -88,4 +88,19 @@ func GetNFTOwner(uuid string) string {
 		log.Fatal("not found")
 	}
 	return "TODO fix"
+}
+
+func GetAllNFT(pubkey string) []string {
+	db := helper.OpenDB()
+	var user helper.User
+	var ticket helper.Ticket
+	query = "Pubkey = " + pubkey
+	db.Model(helper.Ticket{}).First(&ticket, query)
+	
+	db.Where(query).Preload("Pubkey").Find(&ticket)
+	if db.Error !=  {
+		log.Fatal("not found")
+		return []
+	}
+
 }

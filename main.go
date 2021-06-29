@@ -8,14 +8,28 @@ import (
 	"os/signal"
 	"time"
 
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 	handler "github.com/smartpassnft/smartpass-core/handlers"
+	"github.com/urfave/negroni"
 )
 
+/*
+Implementation references
+- Auth0 go-jwt implementation https://github.com/auth0/go-jwt-middleware
+*/
 func main() {
 	var wait time.Duration
-
 	r := mux.NewRouter()
+
+	jwtm := jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte("My Secret"), nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+	})
+
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         "0.0.0.0:8000",
@@ -25,7 +39,7 @@ func main() {
 
 	// Registration Handlers
 	postRequest := r.Methods(http.MethodPost).Subrouter()
-	postRequest.HandleFunc("/user/login", handler.UserLoginHandler)
+	postRequest.HandleFunc("/login", handler.UserLoginHandler)
 	// r.HandleFunc("/user/status", UserStatusHandler)
 	postRequest.HandleFunc("/user/logout", handler.UserLogoutHandler)
 	postRequest.Use()
@@ -37,7 +51,9 @@ func main() {
 
 	// Query Handler
 	getRequest := r.Methods(http.MethodGet).Subrouter()
-	getRequest.HandleFunc("/user", handler.UserHandler)
+	
+	getRequest.Handle("/user", negroni.New(negroni.HandlerFunc(jwtm.HandlerWithNext), negroni.Wrap(http.HandlerFunc(handler.UserHandler))))
+
 	getRequest.HandleFunc("/nft/mint/{params}", handler.NFTMintHandler)
 	getRequest.HandleFunc("/nft/query/{UUID}", handler.NFTQueryHandler)
 	getRequest.HandleFunc("/nft/id/{UUID}", handler.NFTIDHandler)

@@ -11,7 +11,7 @@ import (
 
 type User struct {
 	Pubkey    string    `json:"pubkey" sql:"pubkey"`
-	TokenHash string    `json:"tokenhash" sql:"tokenhash"`
+	Tickets   []Ticket  `json:"tickets" sql:"tickets"`
 	CreatedAt time.Time `json:"createdat" sql:"createdat"`
 	UpdatedAt time.Time `json:"updatedat" sql:"updatedat"`
 }
