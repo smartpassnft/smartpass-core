@@ -71,7 +71,7 @@ func NFTIDHandler(w http.ResponseWriter, r *http.Request) {
 	wallet := ""
 	// Get wallet address tied to NFT
 	if storage.Exists(uuid) {
-		wallet = storage.GetWallet(uuid)
+		wallet = storage.GetNFTOwner(uuid)
 		// Send Notification
 	}
 	// TODO: Remove when can retrieve wallet
@@ -103,8 +103,8 @@ func NFTSellHandler(w http.ResponseWriter, r *http.Request) {
 
 func QRCodeUri(method string) string {
 	UUID := uuid.New().String()
-	uri := "https://" + site + "/nft/id/" + UUID
-	// uri := "https://127.0.0.1:8000/nft/id/" + UUID
+	// uri := "https://" + site + "/nft/id/" + UUID
+	uri := "https://127.0.0.1:8000/nft/id/" + UUID
 	return uri
 }
 

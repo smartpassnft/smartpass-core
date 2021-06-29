@@ -2,9 +2,11 @@ package storage
 
 // Docs https://gorm.io/docs/index.html
 import (
+	"errors"
 	"log"
 
 	helper "github.com/smartpassnft/smartpass-core/helper"
+	"gorm.io/gorm"
 )
 
 /*
@@ -31,7 +33,7 @@ func CreateTicket(pubkey string, uuid string, value int) {
 	db := helper.OpenDB()
 	ticket := helper.Ticket{UUID: uuid, Pubkey: pubkey, Status: value}
 	result := db.Create(&ticket)
-	if result.Error {
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Fatal("error saving NFT")
 	}
 }
@@ -47,18 +49,23 @@ func UpdateNotification(pubkey string, uuid string, value int) {
 func QueryNotification(pubkey string, uuid string) int {
 	db := helper.OpenDB()
 	ticket := db.First(&helper.Ticket{}, uuid)
-	if ticket.Error {
+	if errors.Is(ticket.Error, gorm.ErrRecordNotFound) {
 		log.Fatal("not found")
 	}
-	val, _ := ticket.Get("Status")
-	return val
+	ticket.Get("Status")
+
+	// val, _ := ticket.Get("Status")
+
+	// TODO Fix return
+	return 1
+	// return val.RowsAffected
 }
 
 // Query User
 func QueryUser(pubkey string) bool {
 	db := helper.OpenDB()
 	user := db.First(&helper.User{}, pubkey)
-	if user.Error {
+	if errors.Is(user.Error, gorm.ErrRecordNotFound) {
 		log.Fatal("not found")
 		return false
 	}
@@ -71,8 +78,14 @@ func QueryUser(pubkey string) bool {
 func Exists(uuid string) bool {
 	db := helper.OpenDB()
 	ticket := db.First(&helper.Ticket{}, uuid)
-	if ticket.Error {
-		return false
+	return !errors.Is(ticket.Error, gorm.ErrRecordNotFound)
+}
+
+func GetNFTOwner(uuid string) string {
+	db := helper.OpenDB()
+	ticket := db.First(&helper.Ticket{}, uuid)
+	if errors.Is(ticket.Error, gorm.ErrRecordNotFound) {
+		log.Fatal("not found")
 	}
-	return true
+	return "TODO fix"
 }

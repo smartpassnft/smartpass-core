@@ -53,7 +53,7 @@ func GetUserDB() string {
 	return db
 }
 
-func OpenDB() gorm.DB {
+func OpenDB() *gorm.DB {
 	// Helper variables
 	user := GetString("server", "./config", "db.user")
 	host := GetString("server", "./config", "db.host")
@@ -62,9 +62,9 @@ func OpenDB() gorm.DB {
 	port := GetString("server", "./config", "db.port")
 
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + db + " port=" + port + " sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config)
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	return db
+	return database
 }
