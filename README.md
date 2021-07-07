@@ -1,7 +1,15 @@
 # SmartPass-Core
-The core logic that enables our smartpass application. This project is very much still in development.
+The core logic that enables our smartpass application. 
+
+**This project is very much still in development**
+
+## Dependencies
+- [avalanchego](https://github.com/smartpassnft/avalanchego)
+- go
 
 ## TODO
-- [ ] Migrate from simple key/value store to sql model
-- [ ] Track Application Specific NFT's
-- [ ] [RFC 6238](https://github.com/sec51/twofactor)
+- [ ] Incorporate TVM (custom AVM instance)
+- [ ] Create extension for [ortelius](https://github.com/ava-labs/ortelius)
+- [ ] c-chain ERC 721 profile scoring
+- [ ] Backend Storage refactoring
+- [ ] Explore adding support that leverages tickets for [RFC 6238](https://github.com/sec51/twofactor)

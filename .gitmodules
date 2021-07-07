@@ -1,3 +1,6 @@
 [submodule "docs"]
 	path = docs
 	url = git@github.com:smartpassnft/gitbook-documentation.git
+[submodule "tvm"]
+	path = tvm
+	url = git@github.com:smartpassnft/tvm.git
